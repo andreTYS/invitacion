@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repository Dispatch: Plan Random 🍔</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --container-bg: #161b22;
+            --border-color: #30363d;
+            --text-color: #c9d1d9;
+            --text-muted: #8b949e;
+            --btn-success: #238636;
+            --btn-success-hover: #2ea043;
+            --btn-danger: #f85149;
+            --accent-color: #58a6ff;
+            --glow-color: rgba(88, 166, 255, 0.15);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background-image: radial-gradient(var(--border-color) 1px, transparent 0);
+            background-size: 24px 24px;
+            opacity: 0.2;
+            animation: backgroundPan 40s linear infinite;
+            z-index: -1;
+        }
+
+        .repo-container {
+            background-color: var(--container-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            width: 100%;
+            max-width: 580px;
+            padding: 32px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--border-color);
+            animation: containerEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            position: relative;
+        }
+
+        .header {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 24px;
+        }
+
+        .repo-path {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .repo-path svg {
+            fill: var(--text-muted);
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 600;
+            margin: 0 0 12px 0;
+            letter-spacing: -0.5px;
+            line-height: 1.3;
+        }
+
+        .pr-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background-color: rgba(46, 160, 67, 0.1);
+            color: #3fb950;
+            padding: 4px 12px;
+            border-radius: 2em;
+            font-size: 13px;
+            font-weight: 500;
+            border: 1px solid rgba(46, 160, 67, 0.3);
+            animation: pulseGlow 2.5s infinite;
+        }
+
+        .pr-status svg {
+            fill: #3fb950;
+        }
+
+        .log-terminal {
+            background-color: #090d13;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 16px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            margin: 20px 0;
+            color: #79c0ff;
+        }
+
+        .log-line {
+            color: var(--text-color);
+            margin-bottom: 4px;
+        }
+
+        .log-success { color: #58a6ff; }
+        .log-warn { color: #d29922; }
+
+        .dependencies-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .dep-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 14px;
+            background-color: rgba(22, 27, 34, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .dep-card:hover {
+            border-color: #444c56;
+            transform: translateX(4px);
+        }
+
+        .dep-icon-wrapper {
+            background-color: #21262d;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dep-icon-wrapper svg {
+            fill: var(--accent-color);
+            width: 18px;
+            height: 18px;
+        }
+
+        .dep-details h3 {
+            margin: 0 0 4px 0;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .dep-details p {
+            margin: 0;
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .question-box {
+            font-size: 16px;
+            font-weight: 500;
+            text-align: center;
+            margin: 28px 0 16px 0;
+            color: var(--text-color);
+        }
+
+        .buttons-zone {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            align-items: center;
+            margin-top: 24px;
+            min-height: 65px;
+            position: relative;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-sizing: border-box;
+        }
+
+        .btn-yes {
+            background-color: var(--btn-success);
+            color: #ffffff;
+            border: 1px solid rgba(240, 246, 252, 0.1);
+            transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-yes:hover {
+            background-color: var(--btn-success-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(46, 160, 67, 0.3);
+        }
+
+        .btn-yes svg { fill: #ffffff; }
+
+        .btn-no {
+            background-color: #21262d;
+            color: var(--btn-danger);
+            border: 1px solid var(--border-color);
+            position: absolute;
+            right: 80px;
+            transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 10;
+        }
+
+        .btn-no svg { fill: var(--btn-danger); }
+
+        @keyframes containerEntrance {
+            from { opacity: 0; transform: scale(0.95) translateY(30px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        @keyframes backgroundPan {
+            from { background-position: 0 0; }
+            to { background-position: 100% 100%; }
+        }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 0 0 rgba(63, 185, 80, 0.2); }
+            70% { box-shadow: 0 0 0 8px rgba(63, 185, 80, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(63, 185, 80, 0); }
+        }
+
+        @media (max-width: 540px) {
+            .repo-container {
+                padding: 22px 18px;
+            }
+
+            .buttons-zone {
+                min-height: 120px;
+            }
+
+            .btn-no {
+                right: auto;
+                left: 50%;
+                top: 44px;
+                transform: translateX(-50%);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="repo-container">
+        <div class="header">
+            <div class="repo-path">
+                <svg viewBox="0 0 16 16" width="16" height="16"><path d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1V9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 011-1h8zM5 12.25v3.25a.25.25 0 00.4.2l1.45-1.087a.25.25 0 01.3 0L8.6 15.7a.25.25 0 00.4-.2v-3.25a.25.25 0 00-.25-.25h-3.5a.25.25 0 00-.25.25z"></path></svg>
+                <span>core-system / out-of-office</span>
+            </div>
+            <h1>Dispatch Event: Inicializar protocolo de distracción aleatoria</h1>
+            <div class="pr-status">
+                <svg viewBox="0 0 16 16" width="14" height="14"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg>
+                <span>Ready for Merge</span>
+            </div>
+        </div>
+
+        <div class="log-terminal">
+            <div class="log-line"><span class="log-success">[INFO]</span> Analizando variables de entorno actuales...</div>
+            <div class="log-line"><span class="log-warn">[WARN]</span> Alerta: Índice de aburrimiento superando el umbral óptimo.</div>
+            <div class="log-line"><span class="log-success">[OK]</span> Ejecutando script interno: <code>invitar-amiga-a-salir.sh</code></div>
+        </div>
+
+        <div class="dependencies-list">
+            <div class="dep-card">
+                <div class="dep-icon-wrapper">
+                    <svg viewBox="0 0 16 16"><path d="M1 2.75C1 1.784 1.784 1 2.75 1h10.5c.966 0 1.75.784 1.75 1.75v7.5A2.75 2.75 0 0112.25 13h-8.5A2.75 2.75 0 011 10.25v-7.5zM2.5 2.75v7.5c0 .69.56 1.25 1.25 1.25h8.5c.69 0 1.25-.56 1.25-1.25v-7.5a.25.25 0 00-.25-.25H2.75a.25.25 0 00-.25.25zM14 5h1.25a.75.75 0 01.75.75v2.5a.75.75 0 01-.75.75H14V5z"></path></svg>
+                </div>
+                <div class="dep-details">
+                    <h3>Módulo <code>coffee-break.ext</code></h3>
+                    <p>“Compilar ideas y actualizar hilos de conversación pendientes bajo los efectos de la cafeína.”</p>
+                </div>
+            </div>
+
+            <div class="dep-card">
+                <div class="dep-icon-wrapper">
+                    <svg viewBox="0 0 16 16"><path d="M8 .25a5.75 5.75 0 00-5.75 5.75c0 4.108 4.79 9.33 5.342 9.91a.75.75 0 001.116 0c.552-.58 5.342-5.802 5.342-9.91A5.75 5.75 0 008 .25zm0 3.5a2.25 2.25 0 110 4.5 2.25 2.25 0 010-4.5z"></path></svg>
+                </div>
+                <div class="dep-details">
+                    <h3>Ubicación sugerida</h3>
+                    <p>“Un lugar con buena música, comida rápida y la excusa perfecta para salir del loop del día.”</p>
+                </div>
+            </div>
+
+            <div class="dep-card">
+                <div class="dep-icon-wrapper">
+                    <svg viewBox="0 0 16 16"><path d="M7.75 1.5a.75.75 0 01.75.75v4.54L11.7 9.3a.75.75 0 11-1.06 1.06L7.75 7.96 5.36 10.36A.75.75 0 114.3 9.3l3.2-3.2V2.25a.75.75 0 01.75-.75zm-5 11.25a.75.75 0 01.75.75v.5h8.5v-.5a.75.75 0 111.5 0v1.25a.75.75 0 01-.75.75H3a.75.75 0 01-.75-.75v-1.25a.75.75 0 01.75-.75z"></path></svg>
+                </div>
+                <div class="dep-details">
+                    <h3>Tiempo estimado</h3>
+                    <p>“90 minutos de buena compañía, un par de risas y el riesgo controlado de que te digan: ‘otra vez te la pasas inventando cosas’.”</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="question-box">¿Te apuntas a la misión?</div>
+        <div class="buttons-zone">
+            <button class="btn btn-yes" type="button">✓ Sí, vamos</button>
+            <button id="noBtn" class="btn btn-no" type="button">✕ No, mejor no</button>
+        </div>
+    </div>
+
+    <script>
+        const noBtn = document.getElementById('noBtn');
+
+        noBtn.addEventListener('mouseenter', () => {
+            const container = document.querySelector('.buttons-zone');
+            const rect = container.getBoundingClientRect();
+            const maxX = Math.max(16, rect.width - 140);
+            const maxY = Math.max(16, rect.height - 44);
+            const x = Math.random() * maxX;
+            const y = Math.random() * maxY;
+            noBtn.style.left = `${x}px`;
+            noBtn.style.top = `${y}px`;
+            noBtn.style.right = 'auto';
+        });
+
+        noBtn.addEventListener('click', () => {
+            noBtn.textContent = '😈 Ya te dije que no';
+            noBtn.disabled = true;
+            noBtn.style.cursor = 'not-allowed';
+            noBtn.style.opacity = '0.8';
+        });
+    </script>
+</body>
+</html>
